@@ -35,7 +35,7 @@ DBConnection(process.env.MONGO_DB_URL);
 app.use(cookieParser());
 
 const corsOptions = { 
-    origin : ['http://192.168.8.164:3000', 'http://localhost:3000', 'https://192.168.8.164:3000', 'https://localhost:3000' ],
+    origin : process.env.CORS_SITE.split(","),
     credentials: true,
  } 
 app.use(cors(corsOptions));

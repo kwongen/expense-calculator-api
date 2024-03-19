@@ -3,3 +3,4 @@ nouse
 system
 localhost.pem
 localhost-key.pem
+.env
