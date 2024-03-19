@@ -1,0 +1,26 @@
+{
+  "name": "expense-calc-api",
+  "version": "0.0.1",
+  "description": "Api for Expense Calculator front-end",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "updateExRate": "node updateExRate.js"
+  },
+  "author": "Eric Kwong",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "joi": "^17.12.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.1.1",
+    "yup": "^1.3.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
