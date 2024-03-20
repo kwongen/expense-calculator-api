@@ -2,7 +2,7 @@
     $ npm init
 
 2. Install required packages
-    $ npm install express bcrypt jsonwebtoken mongoose dotenv
+    $ npm install express bcrypt jsonwebtoken mongoose dotenv cors
 
 3. Install nodemon for development purpose
     $ npm install --save-dev nodemon

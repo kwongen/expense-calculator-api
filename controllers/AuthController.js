@@ -8,12 +8,12 @@ class AuthController {
     static issueRefreshTokenCookie(res, token) {
         res.cookie("refreshToken", token, {
             httpOnly: true,
-            // path: "/api/auth/refresh-token",
+            path: "/api/auth/refresh-token",
             domain: process.env.SERVER_DOMAIN,
             // secure = only send cookie over https
-            secure: false,
+            secure: true,
             // sameSite = only send cookie if the request is coming from the same origin
-            sameSite: "lax", // "strict" | "lax" | "none" (secure must be true)
+            sameSite: "none", // "strict" | "lax" | "none" (secure must be true)
             // maxAge = how long the cookie is valid for in milliseconds
             maxAge: 10 * 60 * 1000, // 10 min
         });   
@@ -39,6 +39,7 @@ class AuthController {
             res.status(200).json(result);
             res.end();
         } catch (error) {
+            console.log("register:", error);
             res.status(401).json(error.message);
         };
     }
@@ -56,6 +57,7 @@ class AuthController {
             res.status(200).json(result);
             res.end();
         } catch (error) {
+            console.log("googleLogin:", error);
             res.status(401).json(error.message);
         }
     }
@@ -71,6 +73,7 @@ class AuthController {
             res.status(200).json(result);
             res.end();
         } catch (error) {
+            console.log("googleRegister:", error);
             res.status(401).json(error.message);
         }
     }
@@ -86,13 +89,14 @@ class AuthController {
             res.status(200).json(result);
             res.end();
         } catch (error) {
+            console.log("login:", error);
             res.status(401).json(error.message);
         }
     }
 
     static logout(req, res) {
         //console.log("logout")
-        res.clearCookie("refreshToken", {path: '/api/auth/refresh-token'})
+        res.clearCookie("refresh-token", {path: '/api/auth/refresh-token'})
         res.end();
     }
 
@@ -114,10 +118,12 @@ class AuthController {
                 }
                 res.end()
             } catch (error) {
+                console.log("refreshToken:", token);
                 res.status(401).json(error.message);
                 res.end()
             }
         } else {
+            console.log("refreshToken:", token);
             res.status(401).json("Invalid or expired session");
             res.end()
         } 
@@ -134,9 +140,11 @@ class AuthController {
             if(result.isValidToken) {
                 next();
             } else {
+                console.log("verifyAccessToken:", error);
                 res.status(401).json("Invalid access token");
             }
         } else {
+            console.log("verifyAccessToken:", authHeader);
             res.status(401).json("You are not authenticated!");
             res.end()
         } 

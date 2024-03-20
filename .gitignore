@@ -5,3 +5,5 @@ localhost.pem
 localhost-key.pem
 .env
 .env.backup
+.env.dev
+.env.prd
