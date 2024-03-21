@@ -50,9 +50,7 @@ if(process.env.SERVER_MODE === "HTTP") {
         console.log(`HTTP Server running on port ${SERVER_PORT}`);
     });
 
-} 
-
-if(process.env.SERVER_MODE === "HTTPS") {
+} else if(process.env.SERVER_MODE === "HTTPS") {
     const httpsServer = https.createServer({
         key: fs.readFileSync('localhost-key.pem'),
         cert: fs.readFileSync('localhost.pem'),
@@ -64,5 +62,12 @@ if(process.env.SERVER_MODE === "HTTPS") {
 }
 
 
-const { pingApiServer } = require("./pingApiServer")
-pingApiServer();
+// Start daily update of the Exchange Rate from exchangerate-api.com
+const { dailyUpdateExRate } = require("./util/ExRateUpdater")
+dailyUpdateExRate();
+
+// Due to api server will be inactivated after 15 min without activity, ping itself to keep the server on. 
+if(process.env.PING_ITSELF==="yes") {
+    const { pingApiServer } = require("./pingApiServer")
+    pingApiServer();
+}

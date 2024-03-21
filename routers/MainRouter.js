@@ -15,12 +15,13 @@ const CalculationController = require("../controllers/CalculationController");
 
 const mainRouter = express.Router();
 
+mainRouter.get('/ping', (req, res) => res.status(200).json("ping success"));
 mainRouter.post('/auth/register', AuthController.register);
 mainRouter.post('/auth/login', AuthController.login);
 mainRouter.post('/auth/google-register', AuthController.googleRegister);
 mainRouter.post('/auth/google-login', AuthController.googleLogin);
 mainRouter.post('/auth/logout', AuthController.logout);
-mainRouter.get('/auth/refresh-token', AuthController.refreshToken);
+mainRouter.get ('/auth/refresh-token', AuthController.refreshToken);
 mainRouter.post('/auth/verify-token', AuthController.verifyAccessToken);
 
 mainRouter.post('/friend/get', AuthController.verifyAccessToken, FriendController.get);

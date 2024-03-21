@@ -69,6 +69,12 @@ const fetchExRate = async (forceUpdate=false) => {
     console.log("All exchange Rate are up-to-date.")
 }
 
+const dailyUpdateExRate = () => {
+    fetchExRate();
+    setInterval(() => fetchExRate(), 86400000) // update everyday     
+}
+
 module.exports = {
     fetchExRate : fetchExRate,
+    dailyUpdateExRate : dailyUpdateExRate,
 }
