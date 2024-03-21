@@ -69,7 +69,7 @@ const getCalculations = async ({profileId, eventId, filter={}}) => {
                             .populate("expensesInvolved.paidBy","friendId friendName")
                             .populate("expensesInvolved.costSplit.friendId","friendId friendName parentId parentName")
                             .populate("involvedCCY","_id value symbol")
-                            .sort({lastUpdatedAt: "desc"});
+                            .sort({createdAt: "desc"});
 
     return calculations;
 }
@@ -216,10 +216,44 @@ const addCalculation = async (calculation) => {
     return createdCalculation;
 }
 
+const deactivateCalculation = async ({profileId, calculationId}) => {
+    let errorMessage;
+
+    if(!mongoose.Types.ObjectId.isValid(profileId)) {
+        errorMessage = "Invalid profile Id provided"
+        throw new Error(errorMessage); 
+    }
+
+    const profile = await UserProfile.findOne({_id:profileId, active:true});
+
+    if(!profile) {
+        errorMessage = "Unable to find user profile."
+        throw new Error(errorMessage);   
+    }
+    
+    try {
+        // validate if event exists
+        const matchedCalculation = await Calculation.findById(calculationId);
+
+        if(!matchedCalculation) {
+            errorMessage = "Calculation item cannot be found";
+            throw new Error(errorMessage);          
+        }
+
+        matchedCalculation.active = false;
+        matchedCalculation.lastUpdatedAt = new Date();
+        matchedCalculation.save();
+
+        return "success";
+    } catch (error) {
+        throw new Error("Unable to deactivate calculation: " + error.message)
+    }
+}
 
 module.exports = {
     cleanUpCalculationData : cleanUpCalculationData,
     getMasterData : getMasterData,
     getCalculations : getCalculations,
     addCalculation : addCalculation,
+    deactivateCalculation : deactivateCalculation,
 }

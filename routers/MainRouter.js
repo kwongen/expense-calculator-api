@@ -45,7 +45,6 @@ mainRouter.post('/expense/deactivate', AuthController.verifyAccessToken, Expense
 mainRouter.post('/calculation/master-data', AuthController.verifyAccessToken, CalculationController.masterData);
 mainRouter.post('/calculation/get', AuthController.verifyAccessToken, CalculationController.get);
 mainRouter.post('/calculation/add', AuthController.verifyAccessToken, CalculationController.add);
-mainRouter.post('/calculation/update', AuthController.verifyAccessToken, CalculationController.update);
 mainRouter.post('/calculation/deactivate', AuthController.verifyAccessToken, CalculationController.deactivate);
 
 module.exports = mainRouter;

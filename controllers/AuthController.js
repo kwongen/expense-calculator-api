@@ -13,7 +13,7 @@ class AuthController {
             // secure = only send cookie over https
             secure: true,
             // sameSite = only send cookie if the request is coming from the same origin
-            sameSite: "none", // "strict" | "lax" | "none" (secure must be true)
+            sameSite: "lax", // "strict" | "lax" | "none" (secure must be true)
             // maxAge = how long the cookie is valid for in milliseconds
             maxAge: 10 * 60 * 1000, // 10 min
         });   
@@ -95,8 +95,7 @@ class AuthController {
     }
 
     static logout(req, res) {
-        //console.log("logout")
-        res.clearCookie("refresh-token", {path: '/api/auth/refresh-token'})
+        res.clearCookie("refreshToken", {path: '/api/auth/refresh-token'})
         res.end();
     }
 
@@ -118,7 +117,7 @@ class AuthController {
                 }
                 res.end()
             } catch (error) {
-                console.log("refreshToken:", token);
+                console.log("refreshToken:", error);
                 res.status(401).json(error.message);
                 res.end()
             }
@@ -140,7 +139,6 @@ class AuthController {
             if(result.isValidToken) {
                 next();
             } else {
-                console.log("verifyAccessToken:", error);
                 res.status(401).json("Invalid access token");
             }
         } else {
