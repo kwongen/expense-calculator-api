@@ -62,3 +62,7 @@ if(process.env.SERVER_MODE === "HTTPS") {
         console.log(`HTTPS Server running on port ${SERVER_PORT}`);
     });
 }
+
+
+const { pingApiServer } = require("./pingApiServer")
+pingApiServer();

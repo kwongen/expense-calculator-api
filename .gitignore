@@ -7,3 +7,4 @@ localhost-key.pem
 .env.backup
 .env.dev
 .env.prd
+pingApiServer.bat
