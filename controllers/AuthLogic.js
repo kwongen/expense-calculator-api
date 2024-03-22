@@ -53,9 +53,12 @@ const createUserInDB = async (name, email, password, type="local") => {
 
         await friend[0].save();
 
+        newUserProfile[0].myFriendId = friend._id;
+        await newUserProfile[0].save();
+
         await session.commitTransaction(); 
 
-        return newUserLogin[0];
+        return {login:newUserLogin[0], profile:newUserProfile[0]};
     } catch (error) {
         // If an error occurred, abort the whole transaction and
         // undo any changes that might have happened
@@ -122,6 +125,9 @@ const registerUser = async ({name = "", email = "", password = "", passwordConfi
 
             await friend[0].save();
     
+            newUserProfile[0].myFriendId = friend._id;
+            await newUserProfile[0].save();
+
             const accessToken = Token.generateAccessToken({ id: newUserLogin[0]._id, email: newUserLogin[0].email });
             const refreshToken = Token.generateRefreshToken({ id: newUserLogin[0]._id, email: newUserLogin[0].email });
             newuser = {login: newUserLogin[0], profile:newUserProfile[0], accessToken: accessToken, refreshToken: refreshToken};
@@ -150,7 +156,6 @@ const registerUser = async ({name = "", email = "", password = "", passwordConfi
 }
 
 const verifyGoogleCredential = async (googleCredential) => {
-
     const response = await fetch(`${process.env.GOOGLE_API_URL}userinfo?access_token=${googleCredential.access_token}`, {
         method: "GET",
         headers: {
@@ -176,7 +181,6 @@ const registerUserByGoogle = async ({googleCredential, regcode}) => {
 
     try {
         const userInfo = await verifyGoogleCredential(googleCredential);
-// console.log(userInfo)
    
         if(process.env.REG_CODE !== regcode) {
             errorMessage = "Incorrect Registration Code.";
@@ -187,24 +191,20 @@ const registerUserByGoogle = async ({googleCredential, regcode}) => {
    
         if(!userLogin) {
             const randomPwd = [...Array(30)].map(() => Math.random().toString(36)[2]).join('');
-            userLogin = await createUserInDB(userInfo.name, userInfo.email, randomPwd, "google")
-
-// console.log(userLogin)
+            user = await createUserInDB(userInfo.name, userInfo.email, randomPwd, "google")
         } 
 
-        const lastAccess = new Date();
-        const accessToken = Token.generateAccessToken({ id: userLogin._id, email: userLogin.email });
-        const refreshToken = Token.generateRefreshToken({ id: userLogin._id, email: userLogin.email });
-
-        userLogin.lastAccess = lastAccess
-        userLogin.save();
+        const accessToken = Token.generateAccessToken({ id: user.login._id, email: user.login.email });
+        const refreshToken = Token.generateRefreshToken({ id: user.login._id, email: user.login.email });
 
         const name = userInfo.name;
-        const profileId = userLogin.profile;
-        const { hashedPassword, createdAt, __v, profile, ...otherData } = userLogin._doc;
-        returnObj = {auth : {...otherData, name, profileId, accessToken, refreshToken}};
+        const profileId = user.profile._id;
+        const paymentLinkTemplate = user.profile?.paymentLinkTemplate;
+        const bankAccountInfo = user.profile?.bankAccountInfo;
+        const myFriendId = user.profile?.myFriendId;        
+        const { hashedPassword, createdAt, __v, profile, ...otherData } = user.login._doc;
+        returnObj = {auth : {...otherData, name, profileId, myFriendId, paymentLinkTemplate, bankAccountInfo, accessToken, refreshToken}};
     } catch (error) {
-        //throw new Error("Failed to login by Google ID")
         throw new Error(JSON.stringify({message: error.message}));  
     }
 
@@ -216,17 +216,10 @@ const authUserByGoogle = async (googleCredential) => {
 
     try {
         const userInfo = await verifyGoogleCredential(googleCredential);
-// console.log(googleCredential)
-// console.log(userInfo)
 
-        let userLogin = await UserLogin.findOne({ email: new RegExp(`^${userInfo.email}$`, 'i'), type:"google" });
+        let userLogin = await UserLogin.findOne({ email: new RegExp(`^${userInfo.email}$`, 'i'), type:"google" }).populate("profile");;
    
         if(!userLogin) {
-            //errorMessage = "Cannot find user"
-            // const randomPwd = [...Array(30)].map(() => Math.random().toString(36)[2]).join('');
-            // userLogin = await createUserInDB(userInfo.name, userInfo.email, randomPwd, "google")
-
-            // console.log(userLogin)
             returnObj = {action: "register"};
         } else {
             const lastAccess = new Date();
@@ -237,9 +230,12 @@ const authUserByGoogle = async (googleCredential) => {
             userLogin.save();
 
             const name = userInfo.name;
-            const profileId = userLogin.profile;
+            const profileId = userLogin.profile._id;
+            const paymentLinkTemplate = userLogin.profile?.paymentLinkTemplate;
+            const bankAccountInfo = userLogin.profile?.bankAccountInfo;
+            const myFriendId = userLogin.profile?.myFriendId;
             const { hashedPassword, createdAt, __v, profile, ...otherData } = userLogin._doc;
-            returnObj = {auth : {...otherData, name, profileId, accessToken, refreshToken}};
+            returnObj = {auth : {...otherData, name, profileId, myFriendId, paymentLinkTemplate, bankAccountInfo, accessToken, refreshToken}};
         }
     } catch (error) {
         //throw new Error("Failed to login by Google ID")
@@ -290,8 +286,11 @@ const authUser = async ({email = "", password = ""}) => {
 
         const name = userLogin.profile.name;
         const profileId = userLogin.profile._id;
+        const paymentLinkTemplate = userLogin.profile?.paymentLinkTemplate;
+        const bankAccountInfo = userLogin.profile?.bankAccountInfo;
+        const myFriendId = userLogin.profile?.myFriendId;    
         const { hashedPassword, createdAt, __v, profile, ...otherData } = userLogin._doc;
-        returnObj = {auth : {...otherData, name, profileId, accessToken, refreshToken}};
+        returnObj = {auth : {...otherData, name, profileId, myFriendId, paymentLinkTemplate, bankAccountInfo, accessToken, refreshToken}};
 
     } catch (err) {
         throw new Error(JSON.stringify({message: err.message}));  
@@ -311,12 +310,15 @@ const generateNewToken = async (token) => {
 
         const name=userLogin.profile.name;
         const profileId = userLogin.profile._id;
+        const paymentLinkTemplate = userLogin.profile?.paymentLinkTemplate;
+        const bankAccountInfo = userLogin.profile?.bankAccountInfo;
+        const myFriendId = userLogin.profile?.myFriendId;            
         const { hashedPassword, createdAt, __v, profile, ...otherData } = userLogin._doc;
 
         const accessToken = Token.generateAccessToken({ id: result.payload._id, email: result.payload.email });
         const refreshToken = Token.generateRefreshToken({ id: userLogin._id, email: userLogin.email });
 
-        return {auth : {...otherData, name, profileId, accessToken, refreshToken}};
+        return {auth : {...otherData, name, profileId, myFriendId, paymentLinkTemplate, bankAccountInfo, accessToken, refreshToken}};
     }
     return {auth : ""};
 }

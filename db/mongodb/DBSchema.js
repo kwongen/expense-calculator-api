@@ -32,6 +32,9 @@ const UserProfileSchema = new Schema (
     {
         name: {type:String, required:true},
         email: {type:String, required:true},
+        paymentLinkTemplate : {type:String},
+        bankAccountInfo: {type:String},
+        myFriendId: {type: Schema.Types.ObjectId, ref: "friend"},
         createdAt: {type: Date, required: true, immutable: true, default: Date.now},
         lastUpdated: {type: Date, required: true, default: Date.now },
         active: {type: Boolean, default: true}

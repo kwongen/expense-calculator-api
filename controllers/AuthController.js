@@ -27,6 +27,9 @@ class AuthController {
             const result = {auth: {
                                     _id: user.login._id,
                                     email: user.login.email,
+                                    myFriendId: user.profile.myFriendId,
+                                    paymentLinkTemplate: user.profile.paymentLinkTemplate,
+                                    bankAccountInfo: user.profile.bankAccountInfo,
                                     lastAccess: user.login.lastAccess,
                                     name: user.profile.name,
                                     profileId: user.profile._id,
