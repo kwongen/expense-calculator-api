@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { getMasterData, getCalculations, addCalculation, deactivateCalculation } = require("./CalculationLogic");
+const { getMasterData, getCalculations, addCalculation, deactivateCalculation, getSharedCalculationResult } = require("./CalculationLogic");
 
 class CalculationController {
 
@@ -22,6 +22,17 @@ class CalculationController {
             res.end();
         } catch (error) {
             console.log("CalculationController.get(): ", error.message)
+            res.status(401).json(error.message);
+        };
+    }
+
+    static async getSharedResult(req, res) {
+        try {
+            const result = await getSharedCalculationResult(req.body);
+            res.status(200).json(result);
+            res.end();
+        } catch (error) {
+            console.log("CalculationController.getSharedResult(): ", error.message)
             res.status(401).json(error.message);
         };
     }

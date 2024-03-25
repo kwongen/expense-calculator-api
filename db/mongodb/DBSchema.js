@@ -165,6 +165,8 @@ const CalculationSchema = new Schema (
             directResult: {type: Schema.Types.Mixed},
             simplifiedResult: {type: Schema.Types.Mixed}
         },
+        shareCode: {type: String},
+        shareCodeExpiry: {type: Date},
         createdAt: {type: Date, required: true, immutable: true, default: Date.now},
         lastUpdatedAt: {type: Date,required: true, default: Date.now},
         active: {type: Boolean, default: true}

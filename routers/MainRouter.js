@@ -46,5 +46,6 @@ mainRouter.post('/calculation/master-data', AuthController.verifyAccessToken, Ca
 mainRouter.post('/calculation/get', AuthController.verifyAccessToken, CalculationController.get);
 mainRouter.post('/calculation/add', AuthController.verifyAccessToken, CalculationController.add);
 mainRouter.post('/calculation/deactivate', AuthController.verifyAccessToken, CalculationController.deactivate);
+mainRouter.post('/calculation/get-shared-result', CalculationController.getSharedResult);
 
 module.exports = mainRouter;

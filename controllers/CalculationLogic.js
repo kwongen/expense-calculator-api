@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const crypto = require("crypto");
 
 const { SysCurrency, Calculation, Event, Expense, UserProfile, ViewFlattenedFriends }  = require("../db/mongodb/DBSchema");
 
@@ -74,6 +75,41 @@ const getCalculations = async ({profileId, eventId, filter={}}) => {
     return calculations;
 }
 
+const getSharedCalculationResult = async ({eventId, calculationId, shareCode}) => {
+    if(!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(calculationId)) {
+        throw new Error("Invalid event Id or calculation Id provided"); 
+    }
+
+    if(!shareCode) {
+        throw new Error("Missing share code"); 
+    }
+
+    const event = await Event.findOne({_id:eventId, active:true});
+
+    if(!event) {
+        throw new Error("Unable to find the event.");   
+    }
+
+    const searchCriteria = {_id:calculationId, event: eventId, shareCode:shareCode, active:true};
+
+    let calculationData = await Calculation.findOne(searchCriteria)
+                            .populate("calculationCCY","_id value symbol")
+                            .populate("expensesInvolved.expense", "expenseDate expenseType")
+                            .populate("expensesInvolved.expenseCCY","_id value symbol")
+                            .populate("expensesInvolved.paidBy","friendId friendName")
+                            .populate("expensesInvolved.costSplit.friendId","friendId friendName parentId parentName")
+                            .populate("involvedCCY","_id value symbol");
+console.log(calculationData)
+    if(calculationData) {
+        if(new Date() > new Date(calculationData.shareCodeExpiry)) {
+            throw new Error("Share code has expired");  
+        }
+        return {eventData: event, calculationData: calculationData};
+    } else {
+        throw new Error("Unable to find the calculation record.");  
+    }
+}
+
 const doCalculation = async (calculation) => {
     // get all friends involved from expenses
     let friendsInvolved = calculation.expensesInvolved.reduce((accu, exp) => 
@@ -131,19 +167,6 @@ const doCalculation = async (calculation) => {
         })
     }) 
 
-    // // Convert to array format 
-    // let directResult = [];
-    // for(const [creditor, debtorObj] of Object.entries(creditorList)) {
-    //     let debtorList = [];
-
-    //     for(const [debtor, amount] of Object.entries(debtorObj)) {
-    //         const [debtorName, debtorId] = debtor.split("_");
-    //         debtorList.push({debtorName:debtorName, debtorId: debtorId, ccy:calculationCCY, amount:amount});
-    //     }
-    //     const [creditorName, creditorId] = creditor.split("_");
-    //     directResult.push({creditorName:creditorName,creditorId:creditorId, debtorList:debtorList})
-    // }
-
     calculationResult = {...calculationResult, directResult:JSON.parse(JSON.stringify(creditorList))};
 
     // Simplify the creditor and debtor relations
@@ -166,19 +189,6 @@ const doCalculation = async (calculation) => {
         })
     })   
 
-    // Convert to array format 
-    // let simplifiedResult = [];
-    // for(const [creditor, debtorObj] of Object.entries(creditorList)) {
-    //     let debtorList = [];
-
-    //     for(const [debtor, amount] of Object.entries(debtorObj)) {
-    //         const [debtorName, debtorId] = debtor.split("_");
-    //         debtorList.push({debtorName:debtorName, debtorId: debtorId, ccy:calculationCCY, amount:amount});
-    //     }
-    //     const [creditorName, creditorId] = creditor.split("_");
-    //     simplifiedResult.push({creditorName:creditorName,creditorId:creditorId, debtorList:debtorList})
-    // }
- 
     calculationResult = {...calculationResult, simplifiedResult:JSON.parse(JSON.stringify(creditorList))};
 
     return calculationResult;
@@ -202,6 +212,11 @@ const addCalculation = async (calculation) => {
     // create event record in db
     calculation["lastUpdatedAt"] = new Date();
     calculation["createdAt"] = new Date();
+    calculation["shareCode"] = crypto.randomBytes(20).toString('hex');
+
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7);
+    calculation["shareCodeExpiry"] = expiryDate;
     
     const calculationbResult = await doCalculation(calculation);
     calculation["calculationResult"] = calculationbResult;
@@ -254,6 +269,7 @@ module.exports = {
     cleanUpCalculationData : cleanUpCalculationData,
     getMasterData : getMasterData,
     getCalculations : getCalculations,
+    getSharedCalculationResult : getSharedCalculationResult,
     addCalculation : addCalculation,
     deactivateCalculation : deactivateCalculation,
 }
