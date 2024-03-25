@@ -98,8 +98,13 @@ class AuthController {
     }
 
     static logout(req, res) {
-        res.clearCookie("refreshToken", {path: '/api/auth/refresh-token'})
-        res.status(200).json('User Logged out');
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            path: "/api/auth/refresh-token",
+            domain: process.env.SERVER_DOMAIN,
+            secure: true,
+            sameSite: "lax"})
+        res.sendStatus(204);
     }
 
     static async refreshToken(req, res) {
