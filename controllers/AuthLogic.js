@@ -295,7 +295,7 @@ const authUser = async ({email = "", password = ""}) => {
     } catch (err) {
         throw new Error(JSON.stringify({message: err.message}));  
     }
-
+    
     return returnObj;
 }
 
