@@ -75,6 +75,34 @@ const getCalculations = async ({profileId, eventId, filter={}}) => {
     return calculations;
 }
 
+const extendShareCodeExpiry = async ({profileId, calculationId}) => {
+    if(!mongoose.Types.ObjectId.isValid(profileId) || !mongoose.Types.ObjectId.isValid(calculationId)) {
+        throw new Error("Invalid profile Id or Calculation Id provided"); 
+    }
+
+    const userProfile = await UserProfile.findOne({_id:profileId, active:true});
+
+    if(!userProfile) {
+        throw new Error("Unable to find user profile.");   
+    }
+
+    const calculationData = await Calculation.findById(calculationId);
+
+    if(!calculationData) {
+        throw new Error("Unable to find calculation record.");   
+    }
+
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7);
+    calculationData.shareCodeExpiry = expiryDate;
+    if(calculationData.shareCode === undefined)
+        calculationData.shareCode = crypto.randomBytes(20).toString('hex');
+
+    calculationData.save();
+
+    return {shareCodeExpiry:calculationData.shareCodeExpiry, shareCode:calculationData.shareCode};
+}
+
 const getSharedCalculationResult = async ({eventId, calculationId, shareCode}) => {
     if(!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(calculationId)) {
         throw new Error("Invalid event Id or calculation Id provided"); 
@@ -99,7 +127,6 @@ const getSharedCalculationResult = async ({eventId, calculationId, shareCode}) =
                             .populate("expensesInvolved.paidBy","friendId friendName")
                             .populate("expensesInvolved.costSplit.friendId","friendId friendName parentId parentName")
                             .populate("involvedCCY","_id value symbol");
-console.log(calculationData)
     if(calculationData) {
         if(new Date() > new Date(calculationData.shareCodeExpiry)) {
             throw new Error("Share code has expired");  
@@ -269,7 +296,8 @@ module.exports = {
     cleanUpCalculationData : cleanUpCalculationData,
     getMasterData : getMasterData,
     getCalculations : getCalculations,
-    getSharedCalculationResult : getSharedCalculationResult,
     addCalculation : addCalculation,
     deactivateCalculation : deactivateCalculation,
+    getSharedCalculationResult : getSharedCalculationResult,
+    extendShareCodeExpiry : extendShareCodeExpiry,
 }

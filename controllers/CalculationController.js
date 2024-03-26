@@ -1,6 +1,11 @@
 require('dotenv').config();
 
-const { getMasterData, getCalculations, addCalculation, deactivateCalculation, getSharedCalculationResult } = require("./CalculationLogic");
+const { getMasterData, 
+        getCalculations, 
+        addCalculation, 
+        deactivateCalculation, 
+        getSharedCalculationResult,
+        extendShareCodeExpiry } = require("./CalculationLogic");
 
 class CalculationController {
 
@@ -22,6 +27,17 @@ class CalculationController {
             res.end();
         } catch (error) {
             console.log("CalculationController.get(): ", error.message)
+            res.status(401).json(error.message);
+        };
+    }
+
+    static async extendShareCode(req, res) {
+        try {
+            const result = await extendShareCodeExpiry(req.body);
+            res.status(200).json(result);
+            res.end();
+        } catch (error) {
+            console.log("CalculationController.extendShareCodeExpiration(): ", error.message)
             res.status(401).json(error.message);
         };
     }
