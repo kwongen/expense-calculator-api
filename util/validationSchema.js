@@ -118,4 +118,40 @@ const expenseSchema = yup.object().shape({
     active: yup.boolean()
 });
 
-module.exports = {registerSchema, loginSchema, friendSchema, eventSchema, expenseSchema};
+const profileSchema = yup.object().shape({
+    name: yup.string()
+        .min(2, "Name: minimum 2 characters")
+        .max(50, "Name: maximum 2 characters")
+        .required("Name: required"),
+    email: yup.string()
+        .email('Email: invalid email format')
+        .required('Email: required'),
+    paymentLinkTemplate: yup.string(),
+    bankAccountInfo: yup.string(),
+});
+
+const changePasswordSchema = yup.object().shape({
+    currentPassword: yup.string()
+        .min(8, 'Current password: must be 8 characters long')
+        .matches(/[0-9]/, 'Current password: requires a number')
+        .matches(/[a-z]/, 'Current password: requires a lowercase letter')
+        .matches(/[A-Z]/, 'Current password: requires an uppercase letter')
+        .matches(/[^\w]/, 'Current password: requires a symbol')
+        .required("Current passsword: required"),
+    newPassword: yup.string()
+        .min(8, 'Password: must be 8 characters long')
+        .matches(/[0-9]/, 'New password: requires a number')
+        .matches(/[a-z]/, 'New password: requires a lowercase letter')
+        .matches(/[A-Z]/, 'New password: requires an uppercase letter')
+        .matches(/[^\w]/, 'New password: requires a symbol')
+        .required("New passsword: required")
+        .notOneOf([yup.ref('currentPassword'), null], 'New password: cannot be the same as current'),
+    confirmPassword: yup.string()
+        .required("Confirm passsword: required")
+        .oneOf([yup.ref('newPassword'), null], 'Confirm password: must match new password'),        
+});
+
+
+module.exports = {registerSchema, loginSchema, friendSchema, 
+                 eventSchema, expenseSchema, profileSchema, 
+                 changePasswordSchema};

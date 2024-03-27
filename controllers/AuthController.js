@@ -43,7 +43,8 @@ class AuthController {
             res.end();
         } catch (error) {
             console.log("register:", error);
-            res.status(401).json(error.message);
+            res.set('Content-Type', 'application/json')
+            res.status(401).send(error.message);
         };
     }
 
@@ -61,7 +62,8 @@ class AuthController {
             res.end();
         } catch (error) {
             console.log("googleLogin:", error);
-            res.status(401).json(error.message);
+            res.set('Content-Type', 'application/json')
+            res.status(401).send(error.message);
         }
     }
 
@@ -77,7 +79,8 @@ class AuthController {
             res.end();
         } catch (error) {
             console.log("googleRegister:", error);
-            res.status(401).json(error.message);
+            res.set('Content-Type', 'application/json')
+            res.status(401).send(error.message);
         }
     }
 
@@ -93,7 +96,8 @@ class AuthController {
             res.end();
         } catch (error) {
             console.log("login:", error);
-            res.status(401).json(error.message);
+            res.set('Content-Type', 'application/json')
+            res.status(401).send(error.message);
         }
     }
 

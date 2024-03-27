@@ -4,7 +4,7 @@ const FriendController = require("../controllers/FriendController");
 const EventController = require("../controllers/EventController");
 const ExpenseController = require("../controllers/ExpenseController");
 const CalculationController = require("../controllers/CalculationController");
-
+const UserController = require("../controllers/UserController");
 
 // const { cleanUpUserData } = require("../controllers/AuthLogic");
 // cleanUpUserData();
@@ -49,6 +49,6 @@ mainRouter.post('/calculation/deactivate', AuthController.verifyAccessToken, Cal
 mainRouter.post('/calculation/extend-share-code', AuthController.verifyAccessToken, CalculationController.extendShareCode);
 mainRouter.post('/calculation/get-shared-result', CalculationController.getSharedResult);
 
-
+mainRouter.post('/user/edit-profile',  UserController.editProfile);
 
 module.exports = mainRouter;
