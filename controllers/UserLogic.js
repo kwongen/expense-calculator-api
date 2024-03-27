@@ -82,7 +82,34 @@ const editProfile = async (profileData) => {
     return "success";
 }
 
+const changePassword = async (changePasswordData) => {
+    await changePasswordSchema.validate(changePasswordData, { abortEarly: false })
+    .then (async () => {
+        const login = await UserLogin.findOne( {_id: changePasswordData.loginId, active: true} );
+        if(!login) {
+            throw new Error("This user login does not exist");   
+        }
+
+        const isCorrectPwd = await login.matchPassword(changePasswordData.currentPassword);
+
+        if(!isCorrectPwd) {
+            throw new Error("Current password is not correct.");  
+        }
+
+        login.hashedPassword = changePasswordData.newPassword;
+        login.lastUpdatedAt = new Date();
+        login.save()
+    })
+    .catch(async (err) => {       
+        if(err.name === "ValidationError")
+            throw new Error(JSON.stringify({message: "Invalid information provided", errors: err.errors})); 
+        else 
+            throw new Error(JSON.stringify({message: err.message}));  
+    })
+
+    return "success";
+}
 
 module.exports = {
-    editProfile : editProfile,
+    editProfile : editProfile, changePassword : changePassword,
 }

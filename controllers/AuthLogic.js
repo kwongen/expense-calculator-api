@@ -28,7 +28,7 @@ const createUserInDB = async (name, email, password, type="local") => {
             name: name,
             email: email,
             createdAt: new Date(),
-            lastUpdated: new Date()
+            lastUpdatedAt: new Date()
         }], options);
 
         await newUserProfile[0].save();
@@ -39,6 +39,7 @@ const createUserInDB = async (name, email, password, type="local") => {
             type: type,
             lastAccess: new Date(),
             createdAt: new Date(),
+            lastUpdatedAt: new Date(),
             profile: newUserProfile[0]._id
         }], options);
 
@@ -100,7 +101,7 @@ const registerUser = async ({name = "", email = "", password = "", passwordConfi
                 name: name,
                 email: email,
                 createdAt: new Date(),
-                lastUpdated: new Date()
+                lastUpdatedAt: new Date()
             }], options);
     
             await newUserProfile[0].save();
@@ -111,6 +112,7 @@ const registerUser = async ({name = "", email = "", password = "", passwordConfi
                 type: "local",
                 lastAccess: new Date(),
                 createdAt: new Date(),
+                lastUpdatedAt: new Date(),
                 profile: newUserProfile[0]._id
             }], options);
     
@@ -295,7 +297,7 @@ const authUser = async ({email = "", password = ""}) => {
     } catch (err) {
         throw new Error(JSON.stringify({message: err.message}));  
     }
-    
+
     return returnObj;
 }
 

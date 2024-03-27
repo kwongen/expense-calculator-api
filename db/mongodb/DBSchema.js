@@ -36,7 +36,7 @@ const UserProfileSchema = new Schema (
         bankAccountInfo: {type:String},
         myFriendId: {type: Schema.Types.ObjectId, ref: "friend"},
         createdAt: {type: Date, required: true, immutable: true, default: Date.now},
-        lastUpdated: {type: Date, required: true, default: Date.now },
+        lastUpdatedAt: {type: Date, required: true, default: Date.now },
         active: {type: Boolean, default: true}
     },
     { collection: 'user_profile' }
@@ -48,6 +48,7 @@ const UserLoginSchema = new Schema (
         hashedPassword: {type:String, required:true},
         type: {type:String, required:true, default:"local"},
         createdAt: {type: Date, required: true, immutable: true, default: Date.now},
+        lastUpdatedAt: {type: Date,required: true, default: Date.now},        
         lastAccess: {type: Date, required: true, default: Date.now },
         profile: {type: Schema.Types.ObjectId, ref: "user_profile",required: true},
         active: {type: Boolean, default: true}

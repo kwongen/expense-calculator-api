@@ -49,6 +49,7 @@ mainRouter.post('/calculation/deactivate', AuthController.verifyAccessToken, Cal
 mainRouter.post('/calculation/extend-share-code', AuthController.verifyAccessToken, CalculationController.extendShareCode);
 mainRouter.post('/calculation/get-shared-result', CalculationController.getSharedResult);
 
-mainRouter.post('/user/edit-profile',  UserController.editProfile);
+mainRouter.post('/user/edit-profile', AuthController.verifyAccessToken, UserController.editProfile);
+mainRouter.post('/user/change-password', AuthController.verifyAccessToken, UserController.changePassword);
 
 module.exports = mainRouter;
