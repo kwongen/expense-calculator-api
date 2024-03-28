@@ -54,7 +54,7 @@ const createUserInDB = async (name, email, password, type="local") => {
 
         await friend[0].save();
 
-        newUserProfile[0].myFriendId = friend._id;
+        newUserProfile[0].myFriendId = friend[0]._id;
         await newUserProfile[0].save();
 
         await session.commitTransaction(); 
@@ -71,7 +71,7 @@ const createUserInDB = async (name, email, password, type="local") => {
     }
 }
 
-const registerUser = async ({name = "", email = "", password = "", passwordConfirm = "", regcode = ""}) => {
+const registerUserOLD = async ({name = "", email = "", password = "", passwordConfirm = "", regcode = ""}) => {
     const data = {name:name, email:email, password:password, passwordConfirm: passwordConfirm, regcode: regcode};
     let newuser=null;
 
@@ -157,6 +157,45 @@ const registerUser = async ({name = "", email = "", password = "", passwordConfi
     return newuser;
 }
 
+const registerUser = async ({name = "", email = "", password = "", passwordConfirm = "", regcode = ""}) => {
+    const data = {name, email, password, passwordConfirm, regcode};
+    let returnObj="";
+
+    await registerSchema.validate(data, { abortEarly: false })
+    .then (async () => {
+        if(process.env.REG_CODE !== data.regcode) {
+            throw new Error("Incorrect Reg Code");   
+        }
+
+        let user = await UserLogin.findOne({ email: new RegExp(`^${data.email}$`, 'i'), type:"local" });
+        if(user) {
+            throw new Error("User already exists");   
+        }
+    
+        user = await createUserInDB(data.name, data.email, data.password, "local")
+
+        const accessToken = Token.generateAccessToken({ id: user.login._id, email: user.login.email });
+        const refreshToken = Token.generateRefreshToken({ id: user.login._id, email: user.login.email });
+
+        const name = data.name;
+        const profileId = user.profile._id;
+        const paymentLinkTemplate = user.profile?.paymentLinkTemplate;
+        const bankAccountInfo = user.profile?.bankAccountInfo;
+        const myFriendId = user.profile?.myFriendId;        
+        const { hashedPassword, createdAt, __v, profile, ...otherData } = user.login._doc;
+        returnObj = {auth : {...otherData, name, profileId, myFriendId, paymentLinkTemplate, bankAccountInfo, accessToken, refreshToken}};
+
+    })
+    .catch(async (err) => {
+        if(err.name === "ValidationError")
+            throw new Error(JSON.stringify({message: "Invalid information provided", errors: err.errors})); 
+        else 
+            throw new Error(JSON.stringify({message: err.message}));  
+    })
+    
+    return returnObj;
+}
+
 const verifyGoogleCredential = async (googleCredential) => {
     const response = await fetch(`${process.env.GOOGLE_API_URL}userinfo?access_token=${googleCredential.access_token}`, {
         method: "GET",
@@ -189,9 +228,9 @@ const registerUserByGoogle = async ({googleCredential, regcode}) => {
             throw new Error(errorMessage);   
         }
 
-        let userLogin = await UserLogin.findOne({ email: new RegExp(`^${userInfo.email}$`, 'i'), type:"google" });
+        let user = await UserLogin.findOne({ email: new RegExp(`^${userInfo.email}$`, 'i'), type:"google" });
    
-        if(!userLogin) {
+        if(!user) {
             const randomPwd = [...Array(30)].map(() => Math.random().toString(36)[2]).join('');
             user = await createUserInDB(userInfo.name, userInfo.email, randomPwd, "google")
         } 

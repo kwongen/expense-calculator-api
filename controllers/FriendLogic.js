@@ -155,7 +155,7 @@ const addFriends = async ({profileId, friends}) => {
 
     // validate friends name against database records
     const regExpAr = allNames.map((item) => new RegExp(`^${item}$`,"i"));
-    const matchedFriends = await Friend.find( {name: {$in : regExpAr}, active: true }, "name" ).exec();
+    const matchedFriends = await Friend.find( {name: {$in : regExpAr}, userProfile: profileId, active: true }, "name" ).exec();
 
     if(Array.isArray(matchedFriends) && matchedFriends.length>0) {
         const matchedNames = matchedFriends.map((item) => item.name).join();

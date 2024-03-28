@@ -21,23 +21,23 @@ class AuthController {
 
     static async register(req, res) {
         try {
-            const user = await registerUser(req.body);
-            //console.log(user)
+            const result = await registerUser(req.body);
 
-            const result = {auth: {
-                                    _id: user.login._id,
-                                    email: user.login.email,
-                                    myFriendId: user.profile.myFriendId,
-                                    paymentLinkTemplate: user.profile.paymentLinkTemplate,
-                                    bankAccountInfo: user.profile.bankAccountInfo,
-                                    lastAccess: user.login.lastAccess,
-                                    name: user.profile.name,
-                                    profileId: user.profile._id,
-                                    accessToken: user.accessToken
-                                }
-                            }
+            // const result = {auth: {
+            //                         _id: user.login._id,
+            //                         email: user.login.email,
+            //                         myFriendId: user.profile.myFriendId,
+            //                         paymentLinkTemplate: user.profile.paymentLinkTemplate,
+            //                         bankAccountInfo: user.profile.bankAccountInfo,
+            //                         lastAccess: user.login.lastAccess,
+            //                         name: user.profile.name,
+            //                         profileId: user.profile._id,
+            //                         accessToken: user.accessToken
+            //                     }
+            //                 }
     
-            AuthController.issueRefreshTokenCookie(res, user.refreshToken);
+            //AuthController.issueRefreshTokenCookie(res, user.refreshToken);
+            AuthController.issueRefreshTokenCookie(res, result.auth.refreshToken);
 
             res.status(200).json(result);
             res.end();
