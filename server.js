@@ -63,8 +63,10 @@ if(process.env.SERVER_MODE === "HTTP") {
 
 
 // Start daily update of the Exchange Rate from exchangerate-api.com
-const { dailyUpdateExRate } = require("./util/ExRateUpdater")
-dailyUpdateExRate();
+if(process.env.EXRATE_UPDATE==="yes") {
+    const { dailyUpdateExRate } = require("./util/ExRateUpdater")
+    dailyUpdateExRate();
+}
 
 // Due to api server will be inactivated after 15 min without activity, ping itself to keep the server on. 
 if(process.env.PING_ITSELF==="yes") {
