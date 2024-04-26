@@ -209,7 +209,7 @@ const updateMutlipleFriends = async ({profileId, friends}) => {
     // validate friends name against database records
     const regExpAr = allNames.map((item) => new RegExp(`^${item}`,"i"));
     const friendIdsToUpdate = friends.map((item) => item._id);
-    const matchedFriends = await Friend.find( {name: {$in : regExpAr}, _id: {$nin: friendIdsToUpdate}, active: true }, "name" ).exec();
+    const matchedFriends = await Friend.find( {userProfile: profileId, name: {$in : regExpAr}, _id: {$nin: friendIdsToUpdate}, active: true }, "name" ).exec();
 
     if(Array.isArray(matchedFriends) && matchedFriends.length>0) {
         const matchedNames = matchedFriends.map((item) => item.name).join();
@@ -262,7 +262,7 @@ const updateSingleFriend = async ({profileId, friend}) => {
 
     // validate friends name against database records
     const regExp =  new RegExp(`^${friend.name}$`,"i");
-    const matchedFriends = await Friend.find( {name: {$in : regExp}, _id: {$nin: friend._id}, active: true }, "name" ).exec();
+    const matchedFriends = await Friend.find( {userProfile: profileId, name: {$in : regExp}, _id: {$nin: friend._id}, active: true }, "name" ).exec();
 
     if(Array.isArray(matchedFriends) && matchedFriends.length>0) {
         const matchedNames = matchedFriends.map((item) => item.name).join();

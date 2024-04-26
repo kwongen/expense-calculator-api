@@ -201,7 +201,7 @@ const doCalculation = async (calculation) => {
         Object.keys(creditorList[creditor]).forEach((debtor) => {
             if(creditor !== debtor && creditorList.hasOwnProperty(debtor) && creditorList[debtor].hasOwnProperty(creditor)) {
                 if(creditorList[creditor][debtor] >= creditorList[debtor][creditor]) {
-                    creditorList[creditor][debtor] = creditorList[creditor][debtor] - creditorList[debtor][creditor];
+                    creditorList[creditor][debtor] = Math.round((creditorList[creditor][debtor] - creditorList[debtor][creditor]) * 100)/ 100;
                     creditorList[debtor][creditor] = 0;
                 }
             } 
