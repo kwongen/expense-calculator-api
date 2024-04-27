@@ -153,20 +153,27 @@ const doCalculation = async (calculation) => {
 
     const calculationCCY = calculation.calculationCCY;
     const calculationExRate = calculation.calculationExRate;
-    let expenseCCY, amtInCalculationCCY, totalAmt=0;
+    let expenseCCY, amtInCalculationCCY, exRate, totalAmt=0;
     let creditorList = {};
+    let creditorTotalSpent = {};
     let creditor, debtor;
 
     // build the creditor and debtor objects
     for(let i=0; i<calculation.expensesInvolved.length; i++) {
         expenseCCY = calculation.expensesInvolved[i].expenseCCY;
+        exRate = (expenseCCY === calculationCCY) ? 1 : calculationExRate[expenseCCY]
         paidBy =  friends.find((f) => f.friendId.toString() === calculation.expensesInvolved[i].paidBy)
         creditor = `${paidBy.parentName}_${paidBy.parentId}`;
 
+        if(!creditorTotalSpent.hasOwnProperty(creditor)) {
+            creditorTotalSpent[creditor] = 0;
+        } 
+
+        creditorTotalSpent[creditor] += Number(calculation.expensesInvolved[i].expenseAmt.$numberDecimal) / exRate;
+
         for(let j=0; j<calculation.expensesInvolved[i].costSplit.length; j++) {
             friend = friends.find((f) => f.friendId.toString() === calculation.expensesInvolved[i].costSplit[j].friendId)
-            debtor = `${friend.parentName}_${friend.parentId}`;
-            exRate = (expenseCCY === calculationCCY) ? 1 : calculationExRate[expenseCCY]
+            debtor = `${friend.parentName}_${friend.parentId}`;           
             amtInCalculationCCY = Number(calculation.expensesInvolved[i].costSplit[j].amount / exRate);
             totalAmt += amtInCalculationCCY;
 
@@ -196,23 +203,60 @@ const doCalculation = async (calculation) => {
 
     calculationResult = {...calculationResult, directResult:JSON.parse(JSON.stringify(creditorList))};
 
+    // Simplify by top paid
+    let topPaidBy;
+    let topPaidAmt = 0;
+    Object.keys(creditorTotalSpent).forEach((creditor) => {
+        if(creditorTotalSpent[creditor] > topPaidAmt) {
+            topPaidAmt = creditorTotalSpent[creditor];
+            topPaidBy = creditor;
+        }
+    })
+
+    Object.keys(creditorList).forEach((creditor) => {
+        if(creditor !== topPaidBy && creditorList[creditor].hasOwnProperty(topPaidBy)) {
+
+            // Move money that topPaidBy owe creditor to himself 
+            if(creditorList[topPaidBy].hasOwnProperty(topPaidBy))
+                creditorList[topPaidBy][topPaidBy] += creditorList[creditor][topPaidBy];
+            else 
+                creditorList[topPaidBy][topPaidBy] = creditorList[creditor][topPaidBy];
+
+            Object.keys(creditorList[creditor]).forEach((debtor) => {
+                if(debtor != topPaidBy && creditorList[topPaidBy].hasOwnProperty(debtor)) {
+                    // Move money owe by debtor from creditor to topPaidBy if debtor already owe topPaidBy money. 
+                    // Then, topPaidBy owe creditor more money. It saved debtor owing 2 persons
+
+                    creditorList[topPaidBy][debtor] += creditorList[creditor][debtor];
+
+                    creditorList[creditor][topPaidBy] += creditorList[creditor][debtor];
+
+                    creditorList[creditor][debtor] = 0;
+                }
+            })
+        }
+    });
+
     // Simplify the creditor and debtor relations
     Object.keys(creditorList).forEach((creditor) => {
         Object.keys(creditorList[creditor]).forEach((debtor) => {
             if(creditor !== debtor && creditorList.hasOwnProperty(debtor) && creditorList[debtor].hasOwnProperty(creditor)) {
                 if(creditorList[creditor][debtor] >= creditorList[debtor][creditor]) {
-                    creditorList[creditor][debtor] = Math.round((creditorList[creditor][debtor] - creditorList[debtor][creditor]) * 100)/ 100;
+                    creditorList[creditor][debtor] = creditorList[creditor][debtor] - creditorList[debtor][creditor];
                     creditorList[debtor][creditor] = 0;
                 }
             } 
         })
     })
     
-    // Remove zero entries
+    // Remove zero entries & round to 2 decimal
     Object.keys(creditorList).forEach((creditor) => {
         Object.keys(creditorList[creditor]).forEach((debtor) => {
-            if(creditorList[creditor][debtor] === 0)
+            if(creditorList[creditor][debtor] === 0) {
                 delete creditorList[creditor][debtor];
+            } else {
+                creditorList[creditor][debtor] = Math.round(creditorList[creditor][debtor] * 100) / 100;
+            }
         })
     })   
 
