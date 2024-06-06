@@ -80,7 +80,7 @@ const validateFriends = async (friends) => {
     return "success"
 }
 
-const getFlattenedFriends = async ({profileId}) => {
+const getFlattenedFriends = async ({profileId, showActiveOnly = true}) => {
     let errorMessage;
 
     if(!mongoose.Types.ObjectId.isValid(profileId)) {
@@ -95,7 +95,9 @@ const getFlattenedFriends = async ({profileId}) => {
         throw new Error(errorMessage);   
     }
 
-    const friends = await ViewFlattenedFriends.find({userProfile: profileId});
+    const friends = showActiveOnly ? 
+                        await ViewFlattenedFriends.find({userProfile: profileId, isActive: true}) : 
+                        await ViewFlattenedFriends.find({userProfile: profileId});
 
     return friends;
 }
