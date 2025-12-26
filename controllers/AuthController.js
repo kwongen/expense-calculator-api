@@ -90,7 +90,8 @@ class AuthController {
 
             AuthController.issueRefreshTokenCookie(res, result.auth.refreshToken);
 
-            delete result.auth.refreshToken;
+            // 20251226: keep refresh token in response for mobile clients
+            //delete result.auth.refreshToken;
 
             res.status(200).json(result);
             res.end();
