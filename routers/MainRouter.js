@@ -22,6 +22,7 @@ mainRouter.post('/auth/google-register', AuthController.googleRegister);
 mainRouter.post('/auth/google-login', AuthController.googleLogin);
 mainRouter.post('/auth/logout', AuthController.logout);
 mainRouter.get ('/auth/refresh-token', AuthController.refreshToken);
+mainRouter.get ('/auth/refresh-token-mobile', AuthController.refreshTokenMobile);
 mainRouter.post('/auth/verify-token', AuthController.verifyAccessToken);
 
 mainRouter.post('/friend/get', AuthController.verifyAccessToken, FriendController.get);

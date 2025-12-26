@@ -141,6 +141,32 @@ class AuthController {
         } 
     }
 
+    static async refreshTokenMobile(req, res) {
+        const authHeader = req.headers.authorization;
+        const token = authHeader!=null ? authHeader.split(" ")[1] : null;
+
+        if (token) {
+            try {
+                const result = await generateNewToken(token);
+                //console.log("AuthController.refreshToken:",result);
+                if(!result.auth || result.auth.length === 0) {
+                    res.status(401).json("Unable to initiate session");
+                } else {
+                    res.status(200).json(result);
+                }
+                res.end()
+            } catch (error) {
+                console.log("refreshToken:", error);
+                res.status(401).json(error.message);
+                res.end()
+            }
+        } else {
+            console.log("refreshToken:", token);
+            res.status(401).json("Invalid or expired session");
+            res.end()
+        } 
+    }
+
     static verifyAccessToken(req, res, next) {
         const authHeader = req.headers.authorization;
 
