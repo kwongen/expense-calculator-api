@@ -8,3 +8,5 @@ localhost-key.pem
 .env.dev
 .env.prd
 pingApiServer.bat
+.vscode
+.DS_Store

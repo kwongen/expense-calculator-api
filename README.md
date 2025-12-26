@@ -10,7 +10,7 @@
 4. Update package.json with the following line in script section
     "start": "nodemon server.js"
 
-5. Generate Key Pairs
+5. Generate Key Pairs (ignore this step as no longer using kep pairs)
     $ node GenerateJWTKeys.mjs
 
 6. Start server

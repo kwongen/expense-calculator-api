@@ -303,8 +303,8 @@ const authUser = async ({email = "", password = ""}) => {
     });
 
     try {
-       const userLogin = await UserLogin.findOne({ email: new RegExp(`^${email}$`, 'i'), type:"local" }).populate("profile");
-   
+        const userLogin = await UserLogin.findOne({ email: new RegExp(`^${email}$`, 'i'), type:"local" }).populate("profile");
+
         if(!userLogin) {
             //errorMessage = "Cannot find user"
             throw new Error(errorMessage);   
