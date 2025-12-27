@@ -16,8 +16,7 @@ class Token {
     }
 
     static generateAccessToken(payload) {    
-        const expireIn =  process.env.JWT_ACCESS_TOKEN_EXPIRE_IN * 60 * 1000; //minute to ms 
-        return this.generateToken(payload, process.env.JWT_ACCESS_TOKEN_KEY, expireIn);
+        return this.generateToken(payload, process.env.JWT_ACCESS_TOKEN_KEY, process.env.JWT_ACCESS_TOKEN_EXPIRE_IN );
     }
 
     static generateRefreshToken(payload) {
